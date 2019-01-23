@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "proto/addressbook.pb.h"
+#include "msgs/addressbook.pb.h"
 using namespace std;
 
 // Iterates though all people in the AddressBook and prints info about them.

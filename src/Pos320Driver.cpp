@@ -3,7 +3,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/serial_port.hpp>
 #include <boost/endian/arithmetic.hpp>
-#include "proto/POS320.pb.h"
+#include "msgs/POS320.pb.h"
 
 using namespace boost::endian;
 

@@ -1,0 +1,52 @@
+syntax="proto3";
+import "Geometry.proto";
+package Ibeo_msg;
+
+message ObjectLux{
+    uint32 ObjectID = 1;
+    uint32 ObjectAge = 2;
+    uint32 PredictionAge = 3;
+
+    uint32 RelativeTimeStamp = 4;
+    Geometry_msg.Point2d ReferencePoint = 5;
+    Geometry_msg.PointSigma2d ReferencePointSigma = 6;
+    
+    Geometry_msg.Point2d ClosestPoint = 7;
+    Geometry_msg.Point2d BoundingBoxCenter = 8;
+    uint32 BoundingBoxWidth = 9;
+    uint32 BoundingBoxLength = 10;
+    
+    Geometry_msg.Point2d ObjectBoxCenter = 11;
+    uint32 ObjectBoxSizeX = 12;
+    uint32 ObjectBoxSizeY = 13;
+    uint32 ObjectBoxOrientation = 14;
+
+    Geometry_msg.Point2d AbsoluteVelocity = 15;
+    uint32 AbsoluteVelocitySigmaX = 16;
+    uint32 AbsoluteVelocitySigmaY = 17;
+
+    enum ObjectClassType{
+        LuxObjectClass_Unclassified = 0;
+        LuxObjectClass_UnknownSmall = 1;
+        LuxObjectClass_UnknownBig = 2;
+        LuxObjectClass_Pedestrian = 3;
+        LuxObjectClass_Bike = 4;
+        LuxObjectClass_Car = 5;
+        LuxObjectClass_Truck = 6;
+        LuxObjectClass_Bicycle = 7;
+    }
+
+    ObjectClassType Classification = 18;
+    uint32 ClassificationAge = 19;
+    uint32 ClassificationCertainty = 20;
+
+    uint32 NumberOfContourPoints = 21;
+    repeated Geometry_msg.Point2d ContourPoints = 22;
+}
+
+
+message ObjectLuxList{
+    uint32 NumberOfObjects = 1;
+    repeated ObjectLux Objects = 2;
+    uint64 TimeStamp = 3;
+}

@@ -4,7 +4,7 @@
 //
 // Olivier Chamoux <olivier.chamoux@fr.thalesgroup.com>
 
-#include "zhelpers.hpp"
+#include "zmq/zhelpers.hpp"
 
 int main () {
     //  Prepare our context and publisher

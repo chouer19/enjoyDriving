@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-#include "zhelpers.hpp"
+#include "zmq/zhelpers.hpp"
 #include "RuiCheng.pb.h"
 
 int main () {
@@ -15,7 +15,7 @@ int main () {
     subscriber.connect("tcp://localhost:5563");
     subscriber.setsockopt( ZMQ_SUBSCRIBE, "control_frame", 1);
 
-    Car_msg::ruicheng_control control;
+    Car_msg::Ruicheng_control control;
 
     while (1) {
  

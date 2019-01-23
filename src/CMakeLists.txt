@@ -2,38 +2,52 @@ PROJECT(src)
 set(CMAKE_CXX_FLAGS "-g -W -Wall -std=c++11")
 
 find_package(Protobuf REQUIRED)
-find_package(Boost COMPONENTS thread REQUIRED)
-set(PROTOINCLUDEDIR ${CMAKE_CURRENT_BINARY_DIR}/proto)
-add_subdirectory(proto)
-add_subdirectory(zmq_examples)
-add_subdirectory(ibeo_examples)
+find_package(Boost COMPONENTS thread program_options REQUIRED)
+find_package(cppzmq)
+
+find_library(ibeosdk
+             libibeosdk.so
+             ${PROJECT_LIB_DIR}
+            )
+
+if(NOT ibeosdk)
+message(FATAL_ERROR “ibeosdk library not found”)
+endif(NOT ibeosdk)
+message("found ibeosdk library")
+
+message(STATUS "#########################   DEMO   #############################")
+
+set(PROTOINCLUDEDIR ${CMAKE_CURRENT_BINARY_DIR}/msgs)
 
 include_directories(${PROTOINCLUDEDIR})
+# boost
 include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${INCLUDE_DIR})
+include_directories(${PROJECT_INCLUDE_DIR})
 
-add_executable(writingMessageTest
-               writingMessageTest.cc
-              )
-target_link_libraries(writingMessageTest 
-                      proto
-                      ${PROTOBUF_LIBRARIES}
-                     )
+add_subdirectory(msgs)
+add_subdirectory(zmq_examples)
+add_subdirectory(ibeo_examples)
+add_subdirectory(proto_examples)
 
-add_executable(readingMessageTest
-               readingMessageTest.cc
+add_executable(Pos320Driver
+               Pos320Driver.cpp
               )
-target_link_libraries(readingMessageTest
-                      proto
-                      ${PROTOBUF_LIBRARIES}
-                     )
-
-add_executable(pos320Driver
-               pos320Driver.cpp
-              )
-target_link_libraries(pos320Driver proto 
+target_link_libraries(Pos320Driver msgs
 			${PROTOBUF_LIBRARIES} 
 			${Boost_LIBRARIES} 
 			${Boost_THREAD_LIBRARY}
-			)
+                     )
+
+add_executable(IbeoLuxLiveDriver
+               IbeoLuxLiveDriver.cpp
+              )
+target_link_libraries(IbeoLuxLiveDriver 
+                      ${ibeosdk} 
+                      ${Boost_LIBRARIES} 
+                      ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                      ${PROTOBUF_LIBRARIES}
+                      msgs
+                      cppzmq
+                     )

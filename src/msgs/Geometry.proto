@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package Geometry_msg;
+
+message Point2d{
+    int32 posX = 1;// x in centimeters
+    int32 posY = 2;// y in centimeters
+}
+
+message PointSigma2d{
+    int32 sigmaX = 1;//
+    int32 sigmaY = 2;
+}

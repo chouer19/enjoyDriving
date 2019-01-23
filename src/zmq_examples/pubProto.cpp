@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-#include "zhelpers.hpp"
+#include "zmq/zhelpers.hpp"
 #include "RuiCheng.pb.h"
 
 int main () {
@@ -16,7 +16,7 @@ int main () {
     zmq::socket_t publisher(context, ZMQ_PUB);
     publisher.bind("tcp://*:5563");
     //publisher.bind("tcp://*:5563");
-    Car_msg::ruicheng_control control;
+    Car_msg::Ruicheng_control control;
     control.set_targetsteeringangle(0);
     control.set_targetspeed(6);
     std::string buff;
