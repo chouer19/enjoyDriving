@@ -2,6 +2,22 @@ syntax = "proto3";
 
 package Pos_msg;
 
+message common_pos{
+    uint64 Timestamp = 11;
+    string PosVersion = 1;
+    float Lat = 1;
+    float Lon = 2;
+    float Height = 3;
+    float Acceleration = 4;
+    float Speed = 5;
+    float Yaw = 6;
+    float Roll = 7;
+    float Pitch = 8;
+
+    float PositionDeviation = 9;
+    float AngleDeviation = 10;
+}
+
 message pos320{
     uint32 TimeStamp = 1;
     uint32 Length = 16;

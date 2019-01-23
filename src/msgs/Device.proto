@@ -13,6 +13,7 @@ syntax="proto3";
 package Device_msg;
 
 message F710{
+    uint64 Timestamp = 21;
     double Lx = 1;
     double Ly = 2;
     double Rx = 3;

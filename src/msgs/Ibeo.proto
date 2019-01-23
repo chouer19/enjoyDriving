@@ -46,7 +46,7 @@ message ObjectLux{
 
 
 message ObjectLuxList{
+    uint64 TimeStamp = 3;
     uint32 NumberOfObjects = 1;
     repeated ObjectLux Objects = 2;
-    uint64 TimeStamp = 3;
 }

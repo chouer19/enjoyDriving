@@ -13,6 +13,8 @@ package Car_msg;
 
 
 message Common_control{
+    required uint64 Timestamp = 7;
+    required string VehicleVersion = 6;
     required int32 TargetSteeringAngle = 1;
     optional int32 TargetSteeringAngularVelocity = 2;
     required int32 TargetSpeed = 3;
@@ -29,6 +31,7 @@ message Common_feedback{
     optional uint32 SpeedRfWheel = 6;// speed of right and front wheel
     optional uint32 SpeedLBWheel = 7;// speed of left and back wheel
     optional uint32 SpeedRbWheel = 8;// speed of right and back wheel
+    required string VehicleVersion = 9;
 }
 
 //======================================================================
