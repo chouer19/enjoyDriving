@@ -1,0 +1,96 @@
+//======================================================================
+/*! \file Vehicle.proto
+ *
+ * \copydoc Copyright
+ * \author Xue Chong(xc)
+ * \date Jun 24, 2019
+ *
+ * car control and feedback message,
+ *///-------------------------------------------------------------------
+syntax = "proto2";
+
+package Car_msg;
+
+
+message Common_control{
+    required int32 TargetSteeringAngle = 1;
+    optional int32 TargetSteeringAngularVelocity = 2;
+    required int32 TargetSpeed = 3;
+    required int32 TargetAcceleration = 4;
+    required int32 TargetDeceleration = 5;
+}
+
+message Common_feedback{
+    required uint32 Speed = 1;
+    required int32 Steer = 2;
+    required int32 Error = 3;
+    required uint32 Mode = 4;
+    optional uint32 SpeedLfWheel = 5;// speed of left and front wheel
+    optional uint32 SpeedRfWheel = 6;// speed of right and front wheel
+    optional uint32 SpeedLBWheel = 7;// speed of left and back wheel
+    optional uint32 SpeedRbWheel = 8;// speed of right and back wheel
+}
+
+//======================================================================
+/*! \file CS55.proto
+ *
+ * \copydoc Copyright
+ * \author Xue Chong(xc)
+ * \date Jun 23, 2019
+ *
+ * CS55 control and feedback message
+ *///-------------------------------------------------------------------
+message Ruicheng_control{
+    required int32 TargetSteeringAngle = 1 [default = 0];
+    required uint32 TargetSpeed = 2 [default = 0];
+    optional uint32 TargetLedStatus = 3 [default = 0];
+    optional uint32 LightSwitch= 4 [default = 0];
+    required uint32 SpeedGear = 5 [default = 0];
+    optional uint32 TimeStamp = 6;
+}
+
+message Ruicheng_feedback{
+    required uint32 EmBrakerStatus = 1;
+    required uint32 EpsStatus = 2;
+    required uint32 TorqueStatus = 3;
+    required uint32 DecStatus = 4;
+    required uint32 SysStatus = 5;
+    required uint32 ucGearCtrlStatus = 6;
+    required uint32 BrakePedalStatus = 7;
+    required uint32 CruiseStatus = 8;
+    required uint32 ucGearPosition = 9;
+    required uint32 uiSpeed = 10;
+    required float uiSteerAngle = 11;
+}
+//======================================================================
+/*! \file CS55.proto
+ *
+ * \copydoc Copyright
+ * \author Xue Chong(xc)
+ * \date Jun 23, 2019
+ *
+ * CS55 control and feedback message
+ *///-------------------------------------------------------------------
+
+message CS55_control{
+    required int32 TargetSteeringAngle = 1 [default = 0];
+    required uint32 TargetSpeed = 2 [default = 0];
+    optional uint32 TargetLedStatus = 3 [default = 0];
+    optional uint32 LightSwitch= 4 [default = 0];
+    required uint32 SpeedGear = 5 [default = 0];
+    optional uint32 TimeStamp = 6;
+}
+
+message CS55_feedback{
+    required uint32 EmBrakerStatus = 1;
+    required uint32 EpsStatus = 2;
+    required uint32 TorqueStatus = 3;
+    required uint32 DecStatus = 4;
+    required uint32 SysStatus = 5;
+    required uint32 ucGearCtrlStatus = 6;
+    required uint32 BrakePedalStatus = 7;
+    required uint32 CruiseStatus = 8;
+    required uint32 ucGearPosition = 9;
+    required uint32 uiSpeed = 10;
+    required float uiSteerAngle = 11;
+}
