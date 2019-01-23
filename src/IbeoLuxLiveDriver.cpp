@@ -3,10 +3,10 @@
  * \copy from file IbeoSdkLuxLiveDemo.cpp
  *
  * \copydoc Copyright
- * \author Mario Brumm (mb)
- * \date Jun 1, 2012
+ * \author Xue Chong(xc)
+ * \date Jun 20, 2019
  *
- * Demo project for connecting to a LUX and process the received
+ * project for connecting to a LUX and process the received
  * data blocks.
  *///-------------------------------------------------------------------
 

@@ -1,0 +1,35 @@
+//======================================================================
+/*! \file CS55.proto
+ *
+ * \copydoc Copyright
+ * \author Xue Chong(xc)
+ * \date Jun 23, 2019
+ *
+ * CS55 control and feedback message
+ *///-------------------------------------------------------------------
+
+syntax="proto3";
+
+package Device_msg;
+
+message F710{
+    double Lx = 1;
+    double Ly = 2;
+    double Rx = 3;
+    double Ry = 4;
+    double Lt = 5;
+    double Rt = 6;
+    uint32 Lb = 7;
+    uint32 Rb = 8;
+    uint32 Left= 10;
+    uint32 Right = 11;
+    uint32 Up = 12;
+    uint32 Down = 13;
+    uint32 A = 14;
+    uint32 B = 15;
+    uint32 X = 16;
+    uint32 Y = 17;
+    uint32 Start = 18;
+    uint32 Back = 19;
+    uint32 Logitech = 20;
+}
