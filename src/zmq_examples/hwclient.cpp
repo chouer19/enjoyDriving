@@ -6,7 +6,7 @@
 #include <zmq.hpp>
 #include <string>
 #include <iostream>
-#include "POS320.pb.h"
+#include "Pos.pb.h"
 
 int main ()
 {
