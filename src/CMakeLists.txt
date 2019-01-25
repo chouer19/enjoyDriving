@@ -31,6 +31,7 @@ add_subdirectory(zmq_examples)
 add_subdirectory(ibeo_examples)
 add_subdirectory(proto_examples)
 add_subdirectory(f710_examples)
+add_subdirectory(cpp_examples)
 
 add_executable(Pos320Driver
                Pos320Driver.cpp
