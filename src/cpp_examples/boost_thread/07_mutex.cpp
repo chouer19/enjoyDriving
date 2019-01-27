@@ -33,10 +33,17 @@ void thread3()
 
 int main()
 {
+  using boost::this_thread::get_id;
   boost::thread t1{thread};
   boost::thread t2{thread};
-  boost::thread t3{thread3};
+  for (int i = 0; i < 5; ++i)
+  {
+    wait(1);
+    mutex.lock();
+    std::cout << "main Thread " << get_id() << ": " << i << std::endl;
+    mutex.unlock();
+  }
+
   t1.join();
   t2.join();
-  t3.join();
 }

@@ -7,37 +7,31 @@ void wait(int seconds)
   boost::this_thread::sleep_for(boost::chrono::seconds{seconds});
 }
 
-void thread()
+void thread(int number)
 {
   for (int i = 0; i < 5; ++i)
   {
     wait(1);
-    std::cout << "1st thread \n";
-    std::cout << i << '\n';
+    std::cout << number <<":"<< i << "\n";
   }
 }
 
-void thread2()
+void thread2(int number)
 {
   for (int i = 0; i < 5; ++i)
   {
     wait(1);
-    std::cout << "2st thread \n";
-    std::cout << i << '\n';
+    std::cout << number <<":"<< i << "\n";
   }
 }
 
 int main()
 {
-  boost::thread t{thread};
-  boost::thread t2{thread2};
+  boost::thread t{thread,1};
+  boost::thread t2{thread,2};
+  boost::thread t3(thread,3);
 
-  for (int i = 0; i < 5; ++i)
-  {
-    wait(1);
-    std::cout << "main thread \n";
-    std::cout << i << '\n';
-  }
   t.join();
   t2.join();
+  t3.join();
 }
