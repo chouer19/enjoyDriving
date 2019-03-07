@@ -13,7 +13,7 @@ int main(int argc, char **argv){
   Pos_msg::pos320 msg;
 
   std::cout.precision(11);
-  std::cout.precision(9);
+  //std::cout.precision(9);
 
   /// defination of serial port for pos320
   /// set options for pos320_sp

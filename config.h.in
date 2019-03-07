@@ -1,0 +1,8 @@
+// the configured options and settings for Tutorial
+#define VERSION_MAJOR @VERSION_MAJOR@
+#define VERSION_MINOR @VERSION_MINOR@
+#define ADDRESS_CFG_PATH "@ADDRESS_CFG_PATH@"
+
+// does the platform provide pow function?
+#cmakedefine HAVE_POW
+

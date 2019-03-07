@@ -53,3 +53,13 @@ target_link_libraries(IbeoLuxLiveDriver
                       msgs
                       cppzmq
                      )
+
+add_executable(test
+               test.cpp
+              )
+target_link_libraries(test msgs
+			${PROTOBUF_LIBRARIES} 
+			${Boost_LIBRARIES} 
+			${Boost_THREAD_LIBRARY}
+                     )
+

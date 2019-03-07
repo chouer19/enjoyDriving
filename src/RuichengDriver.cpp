@@ -5,6 +5,7 @@
  * \author Jan Christian Dittmer (jcd)
  * \date January 28, 2019
  * \date January 29, 2019
+ * \date Febirary 02, 2019
  *///-------------------------------------------------------------------
 //======================================================================
 
@@ -47,18 +48,24 @@ public:
         this.m_port = pos320_sp;
 
         this.m_port.open(this.m_portName, this.m_ec);
+        this.m_opened = this.m_port.is_open();
         if( !this.m_port.is_open()){
-            std::cout<< "port not opened" << std::endl;
-            this.m_opened = false;
-            return false;
+            std::cout << "port not opened" << std::endl;
+        }else{
+            std::cout << "port opened" << std::endl;
         }
-        std::cout<< "port opened" << std::endl;
-        this.m_opened = true;
-        return true;
+        return this.m_opened;
     };
     bool Close(){
+        if(!this.isOpen()){
+            std::cout << "port of " <<this.m_portName << "was not opened yet!\n";
+            return false;
+        }
+        this.m_port.close();
+        this.m_opened = false;
+        return true;
     };
-    bool Write(Car_msg::Ruicheng_control command){
+    bool Write(const Car_msg::Ruicheng_control &command){
         return false;
     };
     bool Read(Car_msg::Ruicheng_feedback &feedback){
