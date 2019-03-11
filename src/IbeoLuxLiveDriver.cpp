@@ -63,9 +63,9 @@ void convertObjLuxListToProtobuf(const ObjectListLux* const pObj, Ibeo_msg::Obje
 TimeConversion tc;
 
 //======================================================================
-    //  Prepare our context and publisher
-    zmq::context_t context(1);
-    zmq::socket_t publisher(context, ZMQ_PUB);
+//  Prepare our context and publisher
+zmq::context_t context(1);
+zmq::socket_t publisher(context, ZMQ_PUB);
 
 class AllLuxListener : public ibeosdk::DataListener<ObjectListLux>,
                        public ibeosdk::DataListener<LogMessageError>,
@@ -111,6 +111,7 @@ public:
                 protoObjList.SerializeToString(&buff);
                 //publish thecontrolm to all
                 s_sendmore (publisher, "ibeoLuxObjList");
+                std::cout << "send out this message" << std::endl;
                 s_send (publisher, buff);
 	}
 }; // AllLuxListener
@@ -125,8 +126,8 @@ public:
 void convertObjLuxListToProtobuf(const ObjectListLux* const pObj, Ibeo_msg::ObjectLuxList &protoObjList){
     protoObjList.clear_objects();
     protoObjList.set_numberofobjects(pObj->getNumberOfObjects());
-    for(int i=0;i < pObj->getNumberOfObjects();i++){
-        std::cout << "object ID:" << pObj->getObjects()[i].getObjectId();
+    for(int i=0;i < pObj->getNumberOfObjects();i++){// for start 0
+        std::cout << "object ID:" << pObj->getObjects()[i].getObjectId() << std::endl;
         Ibeo_msg::ObjectLux* obj = protoObjList.add_objects();
         obj->set_objectid(pObj->getObjects()[i].getObjectId());
         obj->set_objectage(pObj->getObjects()[i].getObjectAge());
@@ -177,7 +178,7 @@ void convertObjLuxListToProtobuf(const ObjectListLux* const pObj, Ibeo_msg::Obje
         obj->set_absolutevelocitysigmay(pObj->getObjects()[i].getAbsoluteVelocitySigmaY());
 
         //
-        switch(pObj->getObjects()[i].getClassification()){
+        switch(pObj->getObjects()[i].getClassification()){//switch start 1
             case luxObjectClass::LuxObjectClass_Unclassified:{
                 obj->set_classification(Ibeo_msg::ObjectLux::LuxObjectClass_Unclassified);
                 break;
@@ -213,7 +214,7 @@ void convertObjLuxListToProtobuf(const ObjectListLux* const pObj, Ibeo_msg::Obje
             default:{
                 break;
             }
-        }
+        } // switch end 1
 
         obj->set_classificationage(pObj->getObjects()[i].getClassificationAge());
         obj->set_classificationcertainty(pObj->getObjects()[i].getClassificationCertainty());
@@ -225,7 +226,7 @@ void convertObjLuxListToProtobuf(const ObjectListLux* const pObj, Ibeo_msg::Obje
             point->set_posx(pObj->getObjects()[i].getContourPoints()[j].getX());
             point->set_posy(pObj->getObjects()[i].getContourPoints()[j].getY());
         }
-    }
+    }// for end 0
     NTPTime nptTime = NTPTime();
     nptTime.setFromPTime(Time::localTime());
     protoObjList.set_timestamp(nptTime.getMilliseconds());
@@ -291,6 +292,9 @@ int main(const int argc, const char** argv)
 		        << "  using IbeoSDK " << ibeoSDK.getVersion().toString() << std::endl;
 	}
 
+        // prepare publisher first
+        publisher.bind("tcp://127.0.0.1:5563");
+
 	live_demo(logFileManager, ip);
 
 	exit(0);
@@ -300,8 +304,6 @@ int main(const int argc, const char** argv)
 
 void live_demo(LogFileManager& logFileManager, std::string ip)
 {
-    // prepare publisher first
-    publisher.bind("tcp://*:5563");
 
 	AllLuxListener allLuxListener;
 	const uint16_t port = getPort(ip, 12002);
