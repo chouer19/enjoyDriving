@@ -1,3 +1,15 @@
+//======================================================================
+/*! \file Pos320Driver.cpp
+ *
+ * \copydoc Copyright
+ * \author Xue Chong(xc)
+ * \date Jun 16, 2019
+ *
+ * project for connecting to POS320 and process the received
+ * datas.
+ *///-------------------------------------------------------------------
+
+
 #include <stdio.h>
 #include <iostream>
 #include <boost/asio.hpp>

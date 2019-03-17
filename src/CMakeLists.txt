@@ -65,3 +65,22 @@ target_link_libraries(test msgs
 			${Boost_THREAD_LIBRARY}
                      )
 
+find_library(rs232
+             librs232.so
+             ${PROJECT_LIB_DIR}
+            )
+
+if(NOT rs232)
+message(FATAL_ERROR “rs232 library not found”)
+endif(NOT rs232)
+message("found rs232 library")
+
+find_library(orientus
+             liborientus.so
+             ${PROJECT_LIB_DIR}
+            )
+
+
+ADD_EXECUTABLE(OrientusDriver OrientusDriver.cpp)
+TARGET_LINK_LIBRARIES(OrientusDriver ${rs232} ${orientus})
+
