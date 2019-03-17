@@ -33,6 +33,7 @@ add_subdirectory(proto_examples)
 add_subdirectory(f710_examples)
 add_subdirectory(cpp_examples)
 add_subdirectory(orientus_examples)
+add_subdirectory(simdjson_examples)
 add_subdirectory(tools)
 
 add_executable(Pos320Driver
