@@ -42,6 +42,7 @@ void compute_dump(ParsedJson::iterator &pjh) {
 }
 
 int main(int argc, char *argv[]) {
+    std::cout<< "HelloWorld!\n";
 	bool rawdump = false;
 	bool apidump = false;
 
@@ -93,13 +94,19 @@ int main(int argc, char *argv[]) {
     std::cerr << " Parsing failed. " << std::endl;
     return EXIT_FAILURE;
   }
+  std::cout << "before apidump\n";
   if (apidump) {
     ParsedJson::iterator pjh(pj);
+    std::cout << "entered apidump\n";
     if (!pjh.isOk()) {
       std::cerr << " Could not iterate parsed result. " << std::endl;
       return EXIT_FAILURE;
     }
+    std::cout << "before compute_dump(pjh)\n";
     compute_dump(pjh);
+    if(pjh.is_object()){
+        std::cout << "Ture" << std::endl;
+    }
   } else {
     const bool is_ok = rawdump ? pj.dump_raw_tape(std::cout) : pj.printjson(std::cout);
     if (!is_ok) {
@@ -107,5 +114,6 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
   }
+  std::cout << "\n";
   return EXIT_SUCCESS;
 }

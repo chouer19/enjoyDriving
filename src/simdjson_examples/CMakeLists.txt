@@ -18,3 +18,6 @@ message("found simdjson library")
 ADD_EXECUTABLE(readAddress readAddress.cpp)
 TARGET_LINK_LIBRARIES(readAddress ${simdjson})
 
+ADD_EXECUTABLE(testSimdjsonAPI testSimdjsonAPI.cpp)
+TARGET_LINK_LIBRARIES(testSimdjsonAPI ${simdjson})
+
