@@ -69,16 +69,60 @@ int main(int argc, char *argv[]) {
         std::cerr << " Could not iterate parsed result. " << std::endl;
         return EXIT_FAILURE;
     }
-    if (pjh.is_object()){
-        if(pjh.down()){
-            pjh.print(std::cout);
-            std::cout << std::endl;
-        }
-        pjh.next();
-        if(pjh.is_array()){
-            std::cout << "is_array is True\n";
-        }
-    }
+    if (pjh.is_object()){ // 1. if is object start
+        pjh.print(std::cout);// pointing at root node {, step 0
+        std::cout << std::endl;
+        pjh.down(); // pointing at addresses, step 1
+        std::cout << pjh.get_string() << std::endl;
+
+        pjh.next(); // pointing at [, step 2
+        pjh.print(std::cout);// pointing at [
+        std::cout << std::endl;
+        
+        pjh.down(); // pointing at {, step 3
+        pjh.print(std::cout);// pointing at {
+        std::cout << std::endl;
+        
+        pjh.down(); // pointing at name, step 4
+        std::cout << pjh.get_string() << std::endl;
+        
+        pjh.next(); // pointing at ibeoLuxObjList, step 5
+        std::cout << pjh.get_string() << std::endl;
+        
+        pjh.next(); // pointing at address, step 6
+        std::cout << pjh.get_string() << std::endl;
+        
+        pjh.next(); // pointing at tcp://..., step 7
+        std::cout << pjh.get_string() << std::endl;
+        
+        pjh.next(); // pointing at topic, step 8
+        std::cout << pjh.get_string() << std::endl;
+        
+        pjh.next(); // pointing at ibeoLuxObjList, step 9
+        std::cout << pjh.get_string() << std::endl;
+        
+        pjh.up(); // pointing at { above, step 10
+        std::cout << "==============================" << std::endl;
+
+        pjh.next(); // pointing at second {, step 11
+        pjh.print(std::cout);// pointing at {
+        std::cout << std::endl;
+        
+        pjh.down(); // pointing at name, step 12
+        std::cout << pjh.get_string() << std::endl;
+        
+        pjh.next(); // pointing at ibeoLuxObjList, step 13
+        std::cout << pjh.get_string() << std::endl;
+        
+        pjh.next(); // pointing at address, step 14
+        std::cout << pjh.get_string() << std::endl;
+        
+        pjh.next(); // pointing at tcp://..., step 15
+        std::cout << pjh.get_string() << std::endl;
+        
+        pjh.next(); // pointing at topic, step 16
+        std::cout << pjh.get_string() << std::endl;
+    } // 1.end
     //compute_dump(pjh);
     std::cout << "\n";
     return EXIT_SUCCESS;
