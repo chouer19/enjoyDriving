@@ -1,46 +1,3 @@
-/*
- * cansend.c - simple command line tool to send CAN-frames via CAN_RAW sockets
- *
- * Copyright (c) 2002-2007 Volkswagen Group Electronic Research
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of Volkswagen nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * Alternatively, provided that this notice is retained in full, this
- * software may be distributed under the terms of the GNU General
- * Public License ("GPL") version 2, in which case the provisions of the
- * GPL apply INSTEAD OF those given above.
- *
- * The provided data structures and external interfaces from this code
- * are not restricted to be used by modules with a GPL compatible license.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- * DAMAGE.
- *
- * Send feedback to <linux-can@vger.kernel.org>
- *
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,27 +9,20 @@
 
 #include "can/can.h"
 #include "can/raw.h"
-
 #include "can/lib.h"
 
 int main(int argc, char **argv)
 {
 	int s; /* can raw socket */ 
-	int required_mtu;
+	int required_mtu = 16;
 	int mtu;
 	int enable_canfd = 1;
 	struct sockaddr_can addr;
 	struct canfd_frame frame;
 	struct ifreq ifr;
 
-	/* check command line options */
-	if (argc != 3) {
-		fprintf(stderr, "Usage: %s <device> <can_frame>.\n", argv[0]);
-		return 1;
-	}
-
 	/* parse CAN frame */
-	required_mtu = parse_canframe(argv[2], &frame);
+	required_mtu = parse_canframe("5A1#1122334455667788", &frame);
 	if (!required_mtu){
 		fprintf(stderr, "\nWrong CAN-frame format! Try:\n\n");
 		fprintf(stderr, "    <can_id>#{data}            for 'classic' CAN 2.0 data frames\n");
@@ -144,6 +94,15 @@ int main(int argc, char **argv)
 		perror("bind");
 		return 1;
 	}
+
+	frame.data[0] = 0x89;
+	frame.data[1] = 0x66;
+	frame.data[2] = 0x89;
+	frame.data[3] = 0x22;
+	frame.data[4] = 0x89;
+	frame.data[5] = 0x77;
+	frame.data[6] = 0x89;
+	frame.data[7] = 0x99;
 
 	/* send frame */
 	if (write(s, &frame, required_mtu) != required_mtu) {
