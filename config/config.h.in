@@ -1,0 +1,6 @@
+// the configured options and settings for Tutorial
+#define VERSION_MAJOR @VERSION_MAJOR@
+#define VERSION_MINOR @VERSION_MINOR@
+#define ADDRESS_CFG_PATH "@ADDRESS_CFG_PATH@"
+#define DATA_CFG_PATH "@DATA_CFG_PATH@"
+

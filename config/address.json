@@ -1,4 +1,7 @@
-{"address":[
-    {"name":"","address":"","topic":""},
-    {"name":"","address":"","topic":""}
-]}
+{"addresses":
+    [
+    {"name":"ibeoLuxObjList","address":"tcp://127.0.0.1:5563","topic":"ibeoLuxObjList"},
+    {"name":"rgpakPos","address":"tcp://127.0.0.1:5566","topic":"rgpakPos"}
+    ]
+}
+
