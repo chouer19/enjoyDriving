@@ -20,43 +20,9 @@
 #include "can/raw.h"
 
 #include "can/terminal.h"
-
-
-/* from #include <linux/net_tstamp.h> - since Linux 2.6.30 */
-#define SOF_TIMESTAMPING_SOFTWARE (1<<4)
-#define SOF_TIMESTAMPING_RX_SOFTWARE (1<<3)
-#define SOF_TIMESTAMPING_RAW_HARDWARE (1<<6)
-
-#define MAXSOCK 16    /* max. number of CAN interfaces given on the cmdline */
-#define MAXIFNAMES 30 /* size of receive name index to omit ioctls */
-#define MAXCOL 6      /* number of different colors for colorized output */
 #define ANYDEV "any"  /* name of interface to receive from any CAN interface */
-#define ANL "\r\n"    /* newline in ASC mode */
 
-#define SILENT_INI 42 /* detect user setting on commandline */
-#define SILENT_OFF 0  /* no silent mode */
-#define SILENT_ANI 1  /* silent mode with animation */
-#define SILENT_ON  2  /* silent mode (completely silent) */
-
-#define BOLD    ATTBOLD
-#define RED     ATTBOLD FGRED
-#define GREEN   ATTBOLD FGGREEN
-#define YELLOW  ATTBOLD FGYELLOW
-#define BLUE    ATTBOLD FGBLUE
-#define MAGENTA ATTBOLD FGMAGENTA
-#define CYAN    ATTBOLD FGCYAN
-
-const char col_on [MAXCOL][19] = {BLUE, RED, GREEN, BOLD, MAGENTA, CYAN};
-const char col_off [] = ATTRESET;
-
-static char devname[MAXIFNAMES][IFNAMSIZ+1];
-static int  dindex[MAXIFNAMES];
-static int  max_devname_len; /* to prevent frazzled device name output */ 
 const int canfd_on = 1;
-
-#define MAXANI 4
-const char anichar[MAXANI] = {'|', '/', '-', '\\'};
-const char extra_m_info[4][4] = {"- -", "B -", "- E", "B E"};
 
 static volatile int running = 1;
 
@@ -64,55 +30,6 @@ static volatile int running = 1;
 void sigterm(int signo)
 {
 	running = 0;
-}
-
-int idx2dindex(int ifidx, int socket) {
-
-	int i;
-	struct ifreq ifr;
-
-	for (i=0; i < MAXIFNAMES; i++) {
-		if (dindex[i] == ifidx)
-			return i;
-	}
-
-	/* create new interface index cache entry */
-
-	/* remove index cache zombies first */
-	for (i=0; i < MAXIFNAMES; i++) {
-		if (dindex[i]) {
-			ifr.ifr_ifindex = dindex[i];
-			if (ioctl(socket, SIOCGIFNAME, &ifr) < 0)
-				dindex[i] = 0;
-		}
-	}
-
-	for (i=0; i < MAXIFNAMES; i++)
-		if (!dindex[i]) /* free entry */
-			break;
-
-	if (i == MAXIFNAMES) {
-		fprintf(stderr, "Interface index cache only supports %d interfaces.\n",
-		       MAXIFNAMES);
-		exit(1);
-	}
-
-	dindex[i] = ifidx;
-
-	ifr.ifr_ifindex = ifidx;
-	if (ioctl(socket, SIOCGIFNAME, &ifr) < 0)
-		perror("SIOCGIFNAME");
-
-	if (max_devname_len < strlen(ifr.ifr_name))
-		max_devname_len = strlen(ifr.ifr_name);
-
-	strcpy(devname[i], ifr.ifr_name);
-
-#ifdef DEBUG
-	printf("new index %d (%s)\n", i, devname[i]);
-#endif
-
-	return i;
 }
 
 int main(int argc, char **argv)
@@ -132,6 +49,8 @@ int main(int argc, char **argv)
 	struct canfd_frame frame;
 	int nbytes;
 	struct ifreq ifr;
+        struct timeval timeout, timeout_config = { 0, 0 }, *timeout_current = NULL;
+        int ret = 0;
 
 	signal(SIGTERM, sigterm);
 	signal(SIGHUP, sigterm);
@@ -146,10 +65,6 @@ int main(int argc, char **argv)
 	}
 
  	nbytes = strlen(ptr); /* no ',' found => no filter definitions */
-
-	if (nbytes > max_devname_len){
-		max_devname_len = nbytes; /* for nice printing */
-        }
 
 	addr.can_family = AF_CAN;
 
@@ -207,6 +122,13 @@ int main(int argc, char **argv)
 
 		FD_ZERO(&rdfs);
 		FD_SET(sckt, &rdfs);
+
+                if ((ret = select(sckt + 1, &rdfs, NULL, NULL, timeout_current)) <= 0) {
+                        //perror("select");
+                        running = 0;
+                        continue;
+                }
+
 
 		if (FD_ISSET(sckt, &rdfs)) { // 3.0 FD_ISSET
 			int idx;
