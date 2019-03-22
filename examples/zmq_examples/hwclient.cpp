@@ -6,7 +6,7 @@
 #include <zmq.hpp>
 #include <string>
 #include <iostream>
-#include "Pos.pb.h"
+#include "msgs/Pos.pb.h"
 
 int main ()
 {

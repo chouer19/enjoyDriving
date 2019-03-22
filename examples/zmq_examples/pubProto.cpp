@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include "zmq/zhelpers.hpp"
-#include "Vehicle.pb.h"
+#include "msgs/Vehicle.pb.h"
 
 zmq::context_t context(1);
 zmq::socket_t publisher(context, ZMQ_PUB);

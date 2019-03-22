@@ -17,8 +17,6 @@ message("found ibeosdk library")
 
 message(STATUS "#########################   DEMO   #############################")
 
-set(PROTOINCLUDEDIR ${CMAKE_CURRENT_BINARY_DIR}/msgs)
-
 include_directories(${PROTOINCLUDEDIR})
 # boost
 include_directories(${Boost_INCLUDE_DIRS})
@@ -27,14 +25,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${PROJECT_INCLUDE_DIR})
 
 add_subdirectory(msgs)
-add_subdirectory(zmq_examples)
-add_subdirectory(ibeo_examples)
-add_subdirectory(proto_examples)
-add_subdirectory(f710_examples)
-add_subdirectory(cpp_examples)
-add_subdirectory(orientus_examples)
-add_subdirectory(simdjson_examples)
-add_subdirectory(can_examples)
 add_subdirectory(tools)
 
 add_executable(Pos320Driver

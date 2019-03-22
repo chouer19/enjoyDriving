@@ -6,7 +6,7 @@
 #include <iostream>
 
 #include "zmq/zhelpers.hpp"
-#include "Vehicle.pb.h"
+#include "msgs/Vehicle.pb.h"
 
 int main () {
     //  Prepare our context and subscriber

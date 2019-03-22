@@ -14,7 +14,7 @@
 #define sleep(n)	Sleep(n)
 #endif
 
-#include "Pos.pb.h"
+#include "msgs/Pos.pb.h"
 
 int main () {
     //  Prepare our context and socket
