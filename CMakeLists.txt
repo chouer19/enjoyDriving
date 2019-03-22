@@ -13,7 +13,7 @@ set(DATA_CFG_PATH "${PROJECT_SOURCE_DIR}/data/")
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/config/config.h.in"
-  "${PROJECT_BINARY_DIR}/include/config.h"
+  "${PROJECT_BINARY_DIR}/include/config/config.h"
   )
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS 

@@ -25,51 +25,32 @@
 #include "orientus/an_packet_protocol.h"
 #include "orientus/orientus_packets.h"
 
+#include "msgs/Pos.pb.h"
+#include "zmq/zhelpers.hpp"
+
+#include "config/config.h"
+
 #define RADIANS_TO_DEGREES (180.0/M_PI)
 
-int com_port_number;
 
-int an_packet_transmit(an_packet_t *an_packet)
-{
-	an_packet_encode(an_packet);
-	return SendBuf(com_port_number, an_packet_pointer(an_packet), an_packet_size(an_packet));
-}
-
-/*
- * This is an example of sending a configuration packet to Orientus.
- *
- * 1. First declare the structure for the packet, in this case sensor_ranges_packet_t.
- * 2. Set all the fields of the packet structure
- * 3. Encode the packet structure into an an_packet_t using the appropriate helper function
- * 4. Send the packet
- * 5. Free the packet
- */
-void set_sensor_ranges()
-{
-	an_packet_t *an_packet;
-	sensor_ranges_packet_t sensor_ranges_packet;
-
-	sensor_ranges_packet.permanent = TRUE;
-	sensor_ranges_packet.accelerometers_range = accelerometer_range_4g;
-	sensor_ranges_packet.gyroscopes_range = gyroscope_range_500dps;
-	sensor_ranges_packet.magnetometers_range = magnetometer_range_2g;
-
-	an_packet = encode_sensor_ranges_packet(&sensor_ranges_packet);
-
-	an_packet_transmit(an_packet);
-
-	an_packet_free(&an_packet);
-}
+char comports[22][13]={"/dev/ttyS0","/dev/ttyS1","/dev/ttyS2","/dev/ttyS3","/dev/ttyS4","/dev/ttyS5",
+                       "/dev/ttyS6","/dev/ttyS7","/dev/ttyS8","/dev/ttyS9","/dev/ttyS10","/dev/ttyS11",
+                       "/dev/ttyS12","/dev/ttyS13","/dev/ttyS14","/dev/ttyS15","/dev/ttyUSB0",
+                       "/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3","/dev/ttyUSB4","/dev/ttyUSB5"};
 
 int main(int argc, char *argv[])
 {
+        int com_port_number = 16;
+        int baudRate = 115200;
+        int log = 0;
+        char logname[sizeof("orientus-2019-03-23_163626.log")+1];
 	an_decoder_t an_decoder;
 	an_packet_t *an_packet;
 	
         system_state_packet_t system_state_packet; // ID = 20
 	status_packet_t status_packet; // ID = 23
+	euler_orientation_standard_deviation_packet_t euler_orientation_standard_deviation_packet; // ID = 26
 	raw_sensors_packet_t raw_sensors_packet; // ID = 28
-        //raw_gnss_packet_t raw_gnss_packet; // ID = 29
 	euler_orientation_packet_t euler_orientation_packet; // ID = 39
         external_position_velocity_packet_t external_position_velocity_packet; // ID = 44
         external_position_packet_t external_position_packet; // ID = 45
@@ -77,14 +58,34 @@ int main(int argc, char *argv[])
 	
 	int bytes_received;
 
-	if (argc != 3)
-	{
-		printf("Usage - program com_port_number baud_rate\nExample - packet_example.exe 0 115200\n");
-		exit(EXIT_FAILURE);
-	}
+        while ((opt = getopt(argc, argv, "c:b:l")) != -1) {
+            switch (opt) {
+                case 'c':{
+                    for(int i=0; i < 22;i++){
+                        if(!strcmp(optarg,comports[i])){
+                            com_port_number = i;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case 'b':{
+                    baudRate = atoi(optarg);
+                    break;
+                }
+                case 'l':{
+                    log = 1;
+                    break;
+                }
+                default:{
+                    break;
+                }
+            }
+        }
+        printf("port name is : %s\n",comport[com_port_number]);
+        printf("baudRate is : %d\n",baudRate);
+        printf("logfile is : %s\n",logname);
 
-	com_port_number = atoi(argv[1]);
-	
 	/* open the com port */
 	if (OpenComport(com_port_number, atoi(argv[2])))
 	{
@@ -119,17 +120,12 @@ int main(int argc, char *argv[])
 						printf("\tFilter Ready = %d\n", status_packet.filter_status.b.orientation_filter_initialised);
 					}
 				}*/
-				/*else if (an_packet->id == packet_id_raw_sensors) // ID = 28, raw sensors packet
-				{
-					// copy all the binary data into the typedef struct for the packet 
-					// this allows easy access to all the different values             
-					if(decode_raw_sensors_packet(&raw_sensors_packet, an_packet) == 0)
-					{
-						printf("Raw Sensors Packet:\n");
-						printf("\tAccelerometers X: %f Y: %f Z: %f\n", raw_sensors_packet.accelerometers[0], raw_sensors_packet.accelerometers[1], raw_sensors_packet.accelerometers[2]);
-						printf("\tGyroscopes X: %f Y: %f Z: %f\n", raw_sensors_packet.gyroscopes[0] * RADIANS_TO_DEGREES, raw_sensors_packet.gyroscopes[1] * RADIANS_TO_DEGREES, raw_sensors_packet.gyroscopes[2] * RADIANS_TO_DEGREES);
-					}
-				}*/
+                                else if(an_packet->id == packet_id_euler_orientation_standard_deviation){ // ID = 26, orientation deviation
+                                        if(decode_euler_orientation_standard_deviation_packet(euler_orientation_standard_deviation_packet) == 0){
+                                                printf("Euler orientation standard deviation packet:\n");
+                                                printf("\tDeviation: sigmaRoll = %f, sigmaPitch = %f, sigmaYaw = %f\n", euler_orientation_standard_deviation_packet.standard_deviation[0], euler_orientation_standard_deviation_packet.standard_deviation[1], euler_orientation_standard_deviation_packet.standard_deviation[2]);
+                                        }
+                                }
 				else if (an_packet->id == packet_id_euler_orientation) /*ID = 39, system state packet */
 				{
 					/* copy all the binary data into the typedef struct for the packet */
@@ -152,11 +148,6 @@ int main(int argc, char *argv[])
                                 
                                 }
 
-				else
-				{
-					//printf("Packet ID %u of Length %u\n", an_packet->id, an_packet->length);
-				}
-				
 				/* Ensure that you free the an_packet when your done with it or you will leak memory */
 				an_packet_free(&an_packet);
 			}
@@ -164,6 +155,7 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
     Sleep(10);
 #else
+    // 1 s = 1 000 000 us, 10HZ = 1/1 00 000us, 20HZ = 1/ 50 000us
     usleep(10000);
 #endif
 	}

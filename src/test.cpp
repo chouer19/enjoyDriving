@@ -5,7 +5,7 @@
 #include <boost/asio/serial_port.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include "msgs/Pos.pb.h"
-#include "config.h"
+#include "config/config.h"
 
 using namespace boost::endian;
 
