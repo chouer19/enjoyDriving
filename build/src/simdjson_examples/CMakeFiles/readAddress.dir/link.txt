@@ -1,1 +1,0 @@
-/usr/bin/c++  -g -W -Wall -std=c++11  -rdynamic CMakeFiles/readAddress.dir/readAddress.cpp.o  -o ../../bin/readAddress -Wl,-rpath,/home/xuechong/workspace/enterprise/enjoyDriving/lib ../../../lib/libsimdjson.so 

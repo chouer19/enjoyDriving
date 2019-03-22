@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wall -Wno-parentheses -fno-strict-aliasing -DSO_RXQ_OVFL=40 -DPF_CAN=29 -DAF_CAN=PF_CAN -DN_SLCAN=17 -O3 -DNDEBUG  -rdynamic CMakeFiles/candump.dir/candump.c.o  -o ../../bin/candump -Wl,-rpath,/home/xuechong/workspace/enterprise/enjoyDriving/lib ../../../lib/libcan.so 

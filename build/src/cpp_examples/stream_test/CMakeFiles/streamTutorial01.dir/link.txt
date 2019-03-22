@@ -1,1 +1,0 @@
-/usr/bin/c++  -g -W -Wall -std=c++11  -rdynamic CMakeFiles/streamTutorial01.dir/streamTutorial01.cpp.o  -o ../../../bin/streamTutorial01 

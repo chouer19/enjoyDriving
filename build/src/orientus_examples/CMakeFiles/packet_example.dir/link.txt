@@ -1,1 +1,0 @@
-/usr/bin/c++  -g -W -Wall -std=c++11 -std=c++11 -O3 -Wall -Wextra -Werror -Wno-missing-field-initializers -I . -O3  -rdynamic CMakeFiles/packet_example.dir/packet_example.cpp.o  -o ../../bin/packet_example -Wl,-rpath,/home/xuechong/workspace/enterprise/enjoyDriving/lib ../../../lib/librs232.so ../../../lib/liborientus.so 

@@ -1,1 +1,0 @@
-/usr/bin/c++  -g -W -Wall -std=c++11  -rdynamic CMakeFiles/zmq_test.dir/zmq_test.cpp.o  -o ../../bin/zmq_test -Wl,-rpath,/usr/local/lib /usr/local/lib/libzmq.so.5.2.1 -lpthread -lrt 

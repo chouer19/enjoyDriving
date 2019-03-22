@@ -1,1 +1,0 @@
-/usr/bin/c++  -g -W -Wall -std=c++11 -std=c++11 -O3 -Wall -Wextra -Werror -Wno-missing-field-initializers -I . -O3  -rdynamic CMakeFiles/testF710.dir/testF710.cpp.o  -o ../../bin/testF710 -Wl,-rpath,/home/xuechong/workspace/enterprise/enjoyDriving/lib ../../../lib/libf710.so 

@@ -1,1 +1,0 @@
-/usr/bin/c++  -g -W -Wall -std=c++11  -rdynamic CMakeFiles/testSimdjsonAPI.dir/testSimdjsonAPI.cpp.o  -o ../../bin/testSimdjsonAPI -Wl,-rpath,/home/xuechong/workspace/enterprise/enjoyDriving/lib ../../../lib/libsimdjson.so 

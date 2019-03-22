@@ -1,1 +1,0 @@
-/usr/bin/c++  -g -W -Wall -std=c++11  -rdynamic CMakeFiles/streamFileIO.dir/streamFileIO.cpp.o  -o ../../../bin/streamFileIO 
