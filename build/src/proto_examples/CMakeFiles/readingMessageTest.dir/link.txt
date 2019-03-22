@@ -1,0 +1,1 @@
+/usr/bin/c++  -g -W -Wall -std=c++11  -rdynamic CMakeFiles/readingMessageTest.dir/readingMessageTest.cpp.o  -o ../../bin/readingMessageTest -Wl,-rpath,/usr/local/lib ../msgs/libmsgs.a /usr/local/lib/libprotobuf.so -lpthread -lpthread 

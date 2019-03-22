@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/xuechong/workspace/enterprise/enjoyDriving/src/cpp_examples/boost_thread/07_mutex.cpp
+boost/thread.hpp
+-
+boost/chrono.hpp
+-
+iostream
+-
+

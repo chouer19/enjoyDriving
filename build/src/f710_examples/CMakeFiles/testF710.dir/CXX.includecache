@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/f710/f710.h
+
+/home/xuechong/workspace/enterprise/enjoyDriving/src/f710_examples/testF710.cpp
+stdlib.h
+-
+stdio.h
+-
+err.h
+-
+f710/f710.h
+/home/xuechong/workspace/enterprise/enjoyDriving/src/f710_examples/f710/f710.h
+

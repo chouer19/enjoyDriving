@@ -1,0 +1,2 @@
+/usr/bin/ar qc libmsgs.a  CMakeFiles/msgs.dir/Device.pb.cc.o CMakeFiles/msgs.dir/Geometry.pb.cc.o CMakeFiles/msgs.dir/Ibeo.pb.cc.o CMakeFiles/msgs.dir/Pos.pb.cc.o CMakeFiles/msgs.dir/Vehicle.pb.cc.o CMakeFiles/msgs.dir/addressbook.pb.cc.o
+/usr/bin/ranlib libmsgs.a

@@ -1,0 +1,1 @@
+/usr/bin/c++  -g -W -Wall -std=c++11  -rdynamic CMakeFiles/testThread06.dir/testThread06.cpp.o  -o ../../../bin/testThread06 -lpthread 

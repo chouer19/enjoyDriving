@@ -1,0 +1,14 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/xuechong/workspace/enterprise/enjoyDriving/src/cpp_examples/stream_test/streamString.cpp
+iostream
+-
+sstream
+-
+
