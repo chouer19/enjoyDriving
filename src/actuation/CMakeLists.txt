@@ -1,6 +1,23 @@
 PROJECT(actuation)
 set(CMAKE_CXX_FLAGS "-g -W -Wall -std=c++11")
 
+find_library(can
+             libcan.so
+             ${PROJECT_LIB_DIR}
+            )
+
+if(NOT can)
+message(FATAL_ERROR “can library not found”)
+endif(NOT can)
+message("found can library")
+
+
+add_executable(TjuBusSteer TjuBusSteer.cpp)
+target_link_libraries(TjuBusSteer
+                        ${PROTUBUF_LIBRARIES}
+                        ${Boost_LIBRARIES}
+                        ${Boost_THREAD_LIBRARY}
+                        ${can})
 #add_executable(Pos320Driver
 #               Pos320Driver.cpp
 #              )
