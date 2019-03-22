@@ -15,48 +15,6 @@ message(FATAL_ERROR “ibeosdk library not found”)
 endif(NOT ibeosdk)
 message("found ibeosdk library")
 
-message(STATUS "#########################   DEMO   #############################")
-
-include_directories(${PROTOINCLUDEDIR})
-# boost
-include_directories(${Boost_INCLUDE_DIRS})
-link_directories(${Boost_LIBRARY_DIRS})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${PROJECT_INCLUDE_DIR})
-
-add_subdirectory(msgs)
-add_subdirectory(tools)
-
-add_executable(Pos320Driver
-               Pos320Driver.cpp
-              )
-target_link_libraries(Pos320Driver msgs
-			${PROTOBUF_LIBRARIES} 
-			${Boost_LIBRARIES} 
-			${Boost_THREAD_LIBRARY}
-                     )
-
-add_executable(IbeoLuxLiveDriver
-               IbeoLuxLiveDriver.cpp
-              )
-target_link_libraries(IbeoLuxLiveDriver 
-                      ${ibeosdk} 
-                      ${Boost_LIBRARIES} 
-                      ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                      ${PROTOBUF_LIBRARIES}
-                      msgs
-                      cppzmq
-                     )
-
-add_executable(test
-               test.cpp
-              )
-target_link_libraries(test msgs
-			${PROTOBUF_LIBRARIES} 
-			${Boost_LIBRARIES} 
-			${Boost_THREAD_LIBRARY}
-                     )
-
 find_library(rs232
              librs232.so
              ${PROJECT_LIB_DIR}
@@ -72,7 +30,27 @@ find_library(orientus
              ${PROJECT_LIB_DIR}
             )
 
+if(NOT orientus)
+message(FATAL_ERROR “orientus library not found”)
+endif(NOT orientus)
+message("found orientus library")
 
-ADD_EXECUTABLE(OrientusDriver OrientusDriver.cpp)
-TARGET_LINK_LIBRARIES(OrientusDriver ${rs232} ${orientus})
+include_directories(${PROTOINCLUDEDIR})
+# boost
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${PROJECT_INCLUDE_DIR})
 
+add_subdirectory(msgs)
+add_subdirectory(tools)
+add_subdirectory(actuation)
+
+add_executable(test
+               test.cpp
+              )
+target_link_libraries(test msgs
+			${PROTOBUF_LIBRARIES} 
+			${Boost_LIBRARIES} 
+			${Boost_THREAD_LIBRARY}
+                     )
