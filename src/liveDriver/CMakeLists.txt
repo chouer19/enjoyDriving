@@ -1,6 +1,11 @@
 PROJECT(liveDriver)
 set(CMAKE_CXX_FLAGS "-g -W -Wall -std=c++11")
 
+find_library(simdjson
+             libsimdjson.so
+             ${PROJECT_LIB_DIR}
+            )
+
 add_executable(Pos320Driver
                Pos320Driver.cpp
               )
@@ -22,6 +27,14 @@ target_link_libraries(IbeoLuxLiveDriver
                       cppzmq
                      )
 
-ADD_EXECUTABLE(OrientusDriver OrientusDriver.cpp)
-TARGET_LINK_LIBRARIES(OrientusDriver ${rs232} ${orientus})
+ADD_EXECUTABLE(RgpakDriver RgpakDriver.cpp)
+TARGET_LINK_LIBRARIES(RgpakDriver
+                       ${rs232}
+                       ${orientus}
+                       ${PROTOBUF_LIBRARIES}
+                       msgs
+                       ${simdjson}
+                       common
+                       cppzmq
+                     )
 

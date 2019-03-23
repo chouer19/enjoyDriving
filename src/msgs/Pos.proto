@@ -5,11 +5,11 @@ package Pos_msg;
 message common_pos{
     uint64 Timestamp = 11;
     string PosVersion = 12;
-    repeated float Position = 1;
+    repeated float Position = 1;// Lat(radians), Lon(radians), Height(meters)
     repeated float PositionDeviation = 2;
     repeated float Velocity = 3;
     repeated float VelocityDeviation = 4;
-    repeated float Orientation = 5;
+    repeated float Orientation = 5; // Roll(radians), Pitch(Radians), Roll(Radians)
     repeated float OrientationDeviation = 6;
 }
 

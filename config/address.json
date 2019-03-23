@@ -1,7 +1,10 @@
 {"addresses":
     [
-    {"name":"ibeoLuxObjList","address":"tcp://127.0.0.1:5563","topic":"ibeoLuxObjList"},
-    {"name":"rgpakPos","address":"tcp://127.0.0.1:5566","topic":"rgpakPos"}
+    {"node":"tjuBusControl","address":"tcp://127.0.0.1:5550","topic":"tjuBusControl"},
+    {"node":"tjuBusSteer","address":"tcp://127.0.0.1:5551","topic":"tjuBusControl"},
+    {"node":"tjuBusAcc","address":"tcp://127.0.0.1:5552","topic":"tjuBusControl"},
+    {"node":"RgpakDriver","address":"tcp://127.0.0.1:5560","topic":"rgpakPos"},
+    {"node":"ibeoLuxObjList","address":"tcp://127.0.0.1:5561","topic":"ibeoLuxObjList"}
     ]
 }
 

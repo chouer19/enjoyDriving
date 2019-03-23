@@ -1,5 +1,5 @@
 PROJECT(src)
-set(CMAKE_CXX_FLAGS "-g -W -Wall -std=c++11")
+set(CMAKE_CXX_FLAGS "-g -W -Wall -std=c++17")
 
 find_package(Protobuf REQUIRED)
 find_package(Boost COMPONENTS thread program_options REQUIRED)
@@ -42,9 +42,11 @@ link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${PROJECT_INCLUDE_DIR})
 
+add_subdirectory(common)
 add_subdirectory(msgs)
 add_subdirectory(tools)
 add_subdirectory(actuation)
+add_subdirectory(liveDriver)
 
 add_executable(test
                test.cpp
