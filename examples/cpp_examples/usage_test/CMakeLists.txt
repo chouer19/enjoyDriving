@@ -18,3 +18,5 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DAF_CAN=PF_CAN")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DN_SLCAN=17")
 
 add_executable(signalTest signalTest.c)
+add_executable(charTest charTest.c)
+add_executable(getoptTest getoptTest.c)

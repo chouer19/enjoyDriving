@@ -95,6 +95,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+        frame.can_id = 0x469;
 	frame.data[0] = 0x89;
 	frame.data[1] = 0x66;
 	frame.data[2] = 0x89;

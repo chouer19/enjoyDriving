@@ -4,7 +4,7 @@
 #endif
 #include "simdjson/jsonioutil.h"
 #include "simdjson/jsonparser.h"
-#include "config.h"
+#include "config/config.h"
 
 using namespace std;
 

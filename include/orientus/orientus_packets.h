@@ -57,7 +57,7 @@ typedef enum
     packet_id_status,  // ID = 23, Status Packet
     packet_id_position_standard_deviation,
     packet_id_velocity_standard_deviation,
-    packet_id_euler_orientation_standard_deviation,
+    packet_id_euler_orientation_standard_deviation, // ID = 26, 
     packet_id_quaternion_orientation_standard_deviation, 
     packet_id_raw_sensors,  // ID = 28, Raw Sensors Packet
     packet_id_raw_gnss,     // ID = 29,
