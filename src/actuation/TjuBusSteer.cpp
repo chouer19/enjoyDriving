@@ -47,11 +47,12 @@ extern "C"{
 
 int s; /* can raw socket */
 static volatile int running = 1;
-const int canfd_on = 1;
 zmq::context_t context(1);
-zmq::socket_t publisher(context, ZMQ_PUB);
-zmq::socket_t subscriber (context, ZMQ_SUB);
-boost::mutex mutex;
+
+const int canfd_on = 1;
+struct sockaddr_can addr;
+canid_t pc2ecu_id = 0x469;
+canid_t ecu2pc_id = 0x401;
 
 void sigterm(int signo)
 {
@@ -73,21 +74,100 @@ void print_usage(char *prg)
         fprintf(stderr, "         -r <id>           (can id)\n\n");
 }
 
-void sub_thread(Car_msg::Common_control &control_msg){
+void sub_thread(){
+    char address[sizeof("127.127.127.127:8888")+1];
+    char topic[255]; 
+    int ret;
+    ret = getAddressTopic("main", address, topic);
+    Car_msg::Common_control control_msg;
 
+    zmq::socket_t subscriber (context, ZMQ_SUB);
+    subscriber.connect(address);
+    subscriber.setsockopt( ZMQ_SUBSCRIBE, topic, 1);
+
+    struct canfd_frame write_frame;
+    write_frame.can_id = pc2ecu_id;
+    int required_mtu = 16;
+    /* parse CAN frame */
+    required_mtu = parse_canframe("5A1#1122334455667788", &write_frame);
+
+    while(running){
+        std::string address = s_recv (subscriber);
+        std::string buff = s_recv (subscriber);
+        control_msg.ParseFromString(buff);
+        write_frame.data[0] = control_msg.steeringmode(); // 0: stop control, 0x10: manul control, 0x20: pc contol
+        write_frame.data[1] = 0x00; // reserved
+        write_frame.data[2] = 0x02; // reserved
+        write_frame.data[3] = (control_msg.targetsteeringangle() + 1024) / 256;
+        write_frame.data[4] = (control_msg.targetsteeringangle() + 1024) % 256;
+        write_frame.data[5] = 0x00;
+        write_frame.data[6] = 0x00;
+        write_frame.data[7] = write_frame.data[0]
+                            ^ write_frame.data[1] 
+                            ^ write_frame.data[2] 
+                            ^ write_frame.data[3] 
+                            ^ write_frame.data[4] 
+                            ^ write_frame.data[5] 
+                            ^ write_frame.data[6];
+
+        /* send frame */
+        if (write(s, &write_frame, required_mtu) != required_mtu) {
+                perror("write");
+                //return 1;
+                continue;
+        }
+    }
 }
 
-void pub_thread(Car_msg::Common_feedback &feedback_msg, bool & read, std::string topic){
+void pub_thread(char ** argv){
+    struct canfd_frame read_frame;
+    fd_set rdfs;
+    struct iovec iov;
+    struct msghdr msg;
+    struct cmsghdr *cmsg;
+    char ctrlmsg[CMSG_SPACE(sizeof(struct timeval) + 3*sizeof(struct timespec) + sizeof(__u32))];
+    struct timeval *timeout_current = NULL;
+
+    /* these settings are static and can be held out of the hot path */
+    iov.iov_base = &read_frame;
+    msg.msg_name = &addr;
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = &ctrlmsg;
+
+    char address[sizeof("127.127.127.127:8888")+1];
+    char topic[255];
+    int ret = getAddressTopic(basename(argv[0]), address, topic);
+    zmq::socket_t publisher(context, ZMQ_PUB);
+    publisher.bind(address);
+    Car_msg::Common_feedback back_msg;
     std::string buff;
     while(running){
-        mutex.lock();
-        if(read){
-            feedback_msg.SerializeToString(&buff);
-            s_sendmore(publisher, topic);
-            s_sendmore(publisher, buff);
-            read = false;
+        FD_ZERO(&rdfs);
+        FD_SET(s, &rdfs);
+
+        if ((select(s + 1, &rdfs, NULL, NULL, timeout_current)) <= 0) {
+            //perror("select");
+            running = 0;
+            continue;
         }
-        mutex.unlock();
+        if (FD_ISSET(s, &rdfs)) { // 3.0 FD_ISSET
+            /* these settings may be modified by recvmsg() */
+            iov.iov_len = sizeof(read_frame);
+            msg.msg_namelen = sizeof(addr);
+            msg.msg_controllen = sizeof(ctrlmsg);
+            msg.msg_flags = 0;
+            if(recvmsg(s, &msg, 0) > 0){
+                for(int datai = 0; datai<8; datai++){
+                    printf("0x%0x ",read_frame.data[datai]);
+                }
+                printf("\n");
+                back_msg.set_steer(read_frame.data[3] * 256 - read_frame.data[4]);
+                back_msg.SerializeToString(&buff);
+                s_sendmore(publisher, topic);
+                s_sendmore(publisher, buff);
+            }
+        }
     }
 }
 
@@ -97,21 +177,14 @@ int main(int argc, char **argv)
     signal(SIGHUP, sigterm);
     signal(SIGINT, sigterm);
 
-    int required_mtu = 16;
-    int mtu;
     int enable_canfd = 1;
-    struct sockaddr_can addr;
-    struct canfd_frame write_frame;
     struct ifreq ifr;
-    /* parse CAN frame */
-    required_mtu = parse_canframe("5A1#1122334455667788", &write_frame);
 
     /* open socket */
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
             perror("socket");
             return 1;
     }
-
     // assign can port name, like can0, can1, ......
     strncpy(ifr.ifr_name, argv[1], IFNAMSIZ - 1);
     ifr.ifr_name[IFNAMSIZ - 1] = '\0';
@@ -132,59 +205,8 @@ int main(int argc, char **argv)
             return 1;
     }
 
-    write_frame.can_id = 0x469;
-    write_frame.data[0] = 0x89;
-    write_frame.data[1] = 0x66;
-    write_frame.data[2] = 0x89;
-    write_frame.data[3] = 0x22;
-    write_frame.data[4] = 0x89;
-    write_frame.data[5] = 0x77;
-    write_frame.data[6] = 0x89;
-    write_frame.data[7] = 0x99;
-
-    /* send frame */
-    if (write(s, &write_frame, required_mtu) != required_mtu) {
-            perror("write");
-            return 1;
-    }
-
-    fd_set rdfs;
-    struct iovec iov;
-    struct msghdr msg;
-    struct cmsghdr *cmsg;
-    struct canfd_frame frame;
-    char ctrlmsg[CMSG_SPACE(sizeof(struct timeval) + 3*sizeof(struct timespec) + sizeof(__u32))];
-    struct timeval timeout, timeout_config = { 0, 0 }, *timeout_current = NULL;
-    /* these settings are static and can be held out of the hot path */
-    iov.iov_base = &frame;
-    msg.msg_name = &addr;
-    msg.msg_iov = &iov;
-    msg.msg_iovlen = 1;
-    msg.msg_control = &ctrlmsg;
 
     while (running) {
-        FD_ZERO(&rdfs);
-        FD_SET(s, &rdfs);
-
-        if ((select(s + 1, &rdfs, NULL, NULL, timeout_current)) <= 0) {
-            //perror("select");
-            running = 0;
-            continue;
-        }
-
-        if (FD_ISSET(s, &rdfs)) { // 3.0 FD_ISSET
-            /* these settings may be modified by recvmsg() */
-            iov.iov_len = sizeof(frame);
-            msg.msg_namelen = sizeof(addr);
-            msg.msg_controllen = sizeof(ctrlmsg);
-            msg.msg_flags = 0;
-            if(recvmsg(s, &msg, 0) > 0){
-                for(int datai = 0; datai<8; datai++){
-                    printf("0x%0x ",frame.data[datai]);
-                }
-                printf("\n");
-            }
-        }
     }
 
     return 0;

@@ -17,9 +17,12 @@ message Common_control{
     required string VehicleVersion = 6;
     required int32 TargetSteeringAngle = 1;
     optional int32 TargetSteeringAngularVelocity = 2;
+    required int32 SteeringMode = 8;
     required int32 TargetSpeed = 3;
     required int32 TargetAcceleration = 4;
+    required int32 AccMode = 9;
     required int32 TargetDeceleration = 5;
+    required int32 DecMode = 10;
 }
 
 message Common_feedback{
