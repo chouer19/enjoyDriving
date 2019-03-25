@@ -23,6 +23,10 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
+#include <boost/thread.hpp>
+#include <boost/chrono.hpp>
+#include <iostream>
+
 #include <stdint.h>
 #include <math.h>
 #include <signal.h>
@@ -41,11 +45,22 @@ extern "C"{
 #include "can/lib.h"
 }
 
+int s; /* can raw socket */
 static volatile int running = 1;
+const int canfd_on = 1;
+zmq::context_t context(1);
+zmq::socket_t publisher(context, ZMQ_PUB);
+zmq::socket_t subscriber (context, ZMQ_SUB);
+boost::mutex mutex;
 
 void sigterm(int signo)
 {
         running = 0;
+}
+
+void wait(int milliseconds)
+{
+  boost::this_thread::sleep_for(boost::chrono::milliseconds{milliseconds});
 }
 
 void print_usage(char *prg)
@@ -54,7 +69,26 @@ void print_usage(char *prg)
         fprintf(stderr, "  (use CTRL-C to terminate %s)\n\n", prg);
         fprintf(stderr, "Options: -l                (use log function)\n");
         fprintf(stderr, "         -p <port>         (can port machine)\n");
-        fprintf(stderr, "         -d <id>           (can id)\n\n");
+        fprintf(stderr, "         -t <id>           (can id)\n\n");
+        fprintf(stderr, "         -r <id>           (can id)\n\n");
+}
+
+void sub_thread(Car_msg::Common_control &control_msg){
+
+}
+
+void pub_thread(Car_msg::Common_feedback &feedback_msg, bool & read, std::string topic){
+    std::string buff;
+    while(running){
+        mutex.lock();
+        if(read){
+            feedback_msg.SerializeToString(&buff);
+            s_sendmore(publisher, topic);
+            s_sendmore(publisher, buff);
+            read = false;
+        }
+        mutex.unlock();
+    }
 }
 
 int main(int argc, char **argv)
@@ -63,124 +97,95 @@ int main(int argc, char **argv)
     signal(SIGHUP, sigterm);
     signal(SIGINT, sigterm);
 
-    /* print usage of this process */
-    print_usage(basename(argv[0]));
-
-    /* this node ,for pub */
-    char address[sizeof("127.127.127.127:8888")+1];
-    char topic[255];
-    int ret = getAddressTopic(basename(argv[0]), address, topic);
-    /* message and publisher */
-    Car_msg::common_feedback deke_back_msg;
-    zmq::context_t context(1);
-    zmq::socket_t publisher(context, ZMQ_PUB);
-    publisher.bind(address);
-
-    /* message and subcriber */
-    Car_msg::common_control deke_control_msg;
-    ret = getAddressTopic("main", address, topic);
-    zmq::socket_t subscriber (context, ZMQ_SUB);
-    subscriber.connect(address);
-    subscriber.setsockopt( ZMQ_SUBSCRIBE, topic, 1);
-
-    int s; /* can raw socket */ 
     int required_mtu = 16;
     int mtu;
     int enable_canfd = 1;
     struct sockaddr_can addr;
-    struct canfd_frame frame;
+    struct canfd_frame write_frame;
     struct ifreq ifr;
-    
     /* parse CAN frame */
-    required_mtu = parse_canframe("5A1#1122334455667788", &frame);
-    if (!required_mtu){
-        fprintf(stderr, "\nWrong CAN-frame format! Try:\n\n");
-        fprintf(stderr, "    <can_id>#{data}            for 'classic' CAN 2.0 data frames\n");
-        fprintf(stderr, "    <can_id>#R{len}            for 'classic' CAN 2.0 RTR frames\n");
-        fprintf(stderr, "    <can_id>##<flags>{data}    for CAN FD frames\n\n");
-        fprintf(stderr, "<can_id> can have 3 (SFF) or 8 (EFF) hex chars\n");
-        fprintf(stderr, "{data} has 0..8 (0..64 CAN FD) ASCII hex-values (optionally");
-        fprintf(stderr, " separated by '.')\n");
-        fprintf(stderr, "{len} is an optional 0..8 value as RTR frames can contain a");
-        fprintf(stderr, " valid dlc field\n");
-        fprintf(stderr, "<flags> a single ASCII Hex value (0 .. F) which defines");
-        fprintf(stderr, " canfd_frame.flags\n\n");
-        fprintf(stderr, "e.g. 5A1#11.2233.44556677.88 / 123#DEADBEEF / 5AA# / ");
-        fprintf(stderr, "123##1 / 213##311223344\n     1F334455#1122334455667788 / ");
-        fprintf(stderr, "123#R / 00000123#R3\n\n");
-        return 1;
-    }
-    
+    required_mtu = parse_canframe("5A1#1122334455667788", &write_frame);
+
     /* open socket */
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
-        perror("socket");
-        return 1;
+            perror("socket");
+            return 1;
     }
-    
+
+    // assign can port name, like can0, can1, ......
     strncpy(ifr.ifr_name, argv[1], IFNAMSIZ - 1);
     ifr.ifr_name[IFNAMSIZ - 1] = '\0';
     ifr.ifr_ifindex = if_nametoindex(ifr.ifr_name);
     if (!ifr.ifr_ifindex) {
-        perror("if_nametoindex");
-        return 1;
+            perror("if_nametoindex");
+            return 1;
     }
-    
+
     memset(&addr, 0, sizeof(addr));
     addr.can_family = AF_CAN;
     addr.can_ifindex = ifr.ifr_ifindex;
-    
-    if (required_mtu > CAN_MTU) {
-    
-        /* check if the frame fits into the CAN netdevice */
-        if (ioctl(s, SIOCGIFMTU, &ifr) < 0) {
-            perror("SIOCGIFMTU");
-            return 1;
-        }
-        mtu = ifr.ifr_mtu;
-        
-        if (mtu != CANFD_MTU) {
-            printf("CAN interface is not CAN FD capable - sorry.\n");
-            return 1;
-        }
-        
-        /* interface is ok - try to switch the socket into CAN FD mode */
-        if (setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &enable_canfd, sizeof(enable_canfd))){
-            printf("error when enabling CAN FD support\n");
-            return 1;
-        }
-        
-        /* ensure discrete CAN FD length values 0..8, 12, 16, 20, 24, 32, 64 */
-        frame.len = can_dlc2len(can_len2dlc(frame.len));
-    }
-    
-    /* disable default receive filter on this RAW socket */
-    /* This is obsolete as we do not read from the socket at all, but for */
-    /* this reason we can remove the receive list in the Kernel to save a */
-    /* little (really a very little!) CPU usage.                          */
-    setsockopt(s, SOL_CAN_RAW, CAN_RAW_FILTER, NULL, 0);
-    
+
+    /* try to switch the socket into CAN FD mode */
+    setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
     if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-    	perror("bind");
-    	return 1;
+            perror("bind");
+            return 1;
     }
-    
-    frame.can_id = 0x469;
-    frame.data[0] = 0x89;
-    frame.data[1] = 0x66;
-    frame.data[2] = 0x89;
-    frame.data[3] = 0x22;
-    frame.data[4] = 0x89;
-    frame.data[5] = 0x77;
-    frame.data[6] = 0x89;
-    frame.data[7] = 0x99;
-    
+
+    write_frame.can_id = 0x469;
+    write_frame.data[0] = 0x89;
+    write_frame.data[1] = 0x66;
+    write_frame.data[2] = 0x89;
+    write_frame.data[3] = 0x22;
+    write_frame.data[4] = 0x89;
+    write_frame.data[5] = 0x77;
+    write_frame.data[6] = 0x89;
+    write_frame.data[7] = 0x99;
+
     /* send frame */
-    if (write(s, &frame, required_mtu) != required_mtu) {
-    	perror("write");
-    	return 1;
+    if (write(s, &write_frame, required_mtu) != required_mtu) {
+            perror("write");
+            return 1;
     }
-    
-    close(s);
-    
+
+    fd_set rdfs;
+    struct iovec iov;
+    struct msghdr msg;
+    struct cmsghdr *cmsg;
+    struct canfd_frame frame;
+    char ctrlmsg[CMSG_SPACE(sizeof(struct timeval) + 3*sizeof(struct timespec) + sizeof(__u32))];
+    struct timeval timeout, timeout_config = { 0, 0 }, *timeout_current = NULL;
+    /* these settings are static and can be held out of the hot path */
+    iov.iov_base = &frame;
+    msg.msg_name = &addr;
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = &ctrlmsg;
+
+    while (running) {
+        FD_ZERO(&rdfs);
+        FD_SET(s, &rdfs);
+
+        if ((select(s + 1, &rdfs, NULL, NULL, timeout_current)) <= 0) {
+            //perror("select");
+            running = 0;
+            continue;
+        }
+
+        if (FD_ISSET(s, &rdfs)) { // 3.0 FD_ISSET
+            /* these settings may be modified by recvmsg() */
+            iov.iov_len = sizeof(frame);
+            msg.msg_namelen = sizeof(addr);
+            msg.msg_controllen = sizeof(ctrlmsg);
+            msg.msg_flags = 0;
+            if(recvmsg(s, &msg, 0) > 0){
+                for(int datai = 0; datai<8; datai++){
+                    printf("0x%0x ",frame.data[datai]);
+                }
+                printf("\n");
+            }
+        }
+    }
+
     return 0;
 }

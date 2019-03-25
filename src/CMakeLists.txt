@@ -10,6 +10,13 @@ find_library(ibeosdk
              ${PROJECT_LIB_DIR}
             )
 
+find_library(simdjson
+             libsimdjson.so
+             ${PROJECT_LIB_DIR}
+            )
+
+
+
 if(NOT ibeosdk)
 message(FATAL_ERROR “ibeosdk library not found”)
 endif(NOT ibeosdk)
