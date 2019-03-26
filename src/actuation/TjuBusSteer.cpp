@@ -162,6 +162,7 @@ void pub_thread(char ** argv){
                     printf("0x%0x ",read_frame.data[datai]);
                 }
                 printf("\n");
+                // frame_id ?
                 back_msg.set_steer(read_frame.data[3] * 256 - read_frame.data[4]);
                 back_msg.SerializeToString(&buff);
                 s_sendmore(publisher, topic);
@@ -201,13 +202,19 @@ int main(int argc, char **argv)
     /* try to switch the socket into CAN FD mode */
     setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
     if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-            perror("bind");
-            return 1;
+        perror("bind");
+        return 1;
     }
 
+    boost::thread t_pub{pub_thread, argv};
+    boost::thread t_sub{sub_thread};
 
     while (running) {
+        wait(500);
     }
+
+    t_pub.join();
+    t_sub.join();
 
     return 0;
 }

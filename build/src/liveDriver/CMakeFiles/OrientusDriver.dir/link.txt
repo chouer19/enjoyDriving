@@ -1,0 +1,1 @@
+/usr/bin/c++  -g -W -Wall -std=c++11  -rdynamic CMakeFiles/OrientusDriver.dir/OrientusDriver.cpp.o  -o ../../bin/OrientusDriver -Wl,-rpath,/home/xuechong/workspace/enterprise/enjoyDriving/lib:/usr/local/lib ../../../lib/librs232.so ../../../lib/liborientus.so /usr/local/lib/libprotobuf.so -lpthread ../msgs/libmsgs.a /usr/local/lib/libzmq.so.5.2.1 -lpthread -lrt 
