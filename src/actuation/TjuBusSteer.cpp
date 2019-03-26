@@ -47,6 +47,7 @@ extern "C"{
 
 int s; /* can raw socket */
 static volatile int running = 1;
+int logg = 0;
 zmq::context_t context(1);
 
 const int canfd_on = 1;
@@ -142,6 +143,15 @@ void pub_thread(char ** argv){
     publisher.bind(address);
     Car_msg::Common_feedback back_msg;
     std::string buff;
+
+    char logname[sizeof("deke-2019-03-23_16:36:26.log")+1];
+    if(logg){
+    //if(1){
+        time_t now = time(0);
+        tm *ltm = localtime(&now);
+        sprintf(logname,"Orientus-%d-%02d-%02d_%02d:%02d:%02d.log",1900+ltm->tm_year, ltm->tm_mon, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+    }
+
     while(running){
         FD_ZERO(&rdfs);
         FD_SET(s, &rdfs);
@@ -167,6 +177,10 @@ void pub_thread(char ** argv){
                 back_msg.SerializeToString(&buff);
                 s_sendmore(publisher, topic);
                 s_sendmore(publisher, buff);
+                if(logg){
+                //if(1){
+                    ;
+                }
             }
         }
     }
@@ -180,6 +194,33 @@ int main(int argc, char **argv)
 
     int enable_canfd = 1;
     struct ifreq ifr;
+    strncpy(ifr.ifr_name, "can0", IFNAMSIZ - 1);
+
+    int opt = 0;
+    while ((opt = getopt(argc, argv, "p:t:r:l")) != -1) {
+        switch (opt) {
+            case 'p':{
+                strncpy(ifr.ifr_name, optarg, IFNAMSIZ - 1);
+                break;
+            }
+            case 't':{
+                pc2ecu_id= atoi(optarg);
+                break;
+            }
+            case 'r':{
+                ecu2pc_id= atoi(optarg);
+                break;
+            }
+            case 'l':{
+                logg = 1;
+                break;
+            }
+            default:{
+                break;
+            }
+        }
+    }
+
 
     /* open socket */
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
@@ -187,7 +228,6 @@ int main(int argc, char **argv)
             return 1;
     }
     // assign can port name, like can0, can1, ......
-    strncpy(ifr.ifr_name, argv[1], IFNAMSIZ - 1);
     ifr.ifr_name[IFNAMSIZ - 1] = '\0';
     ifr.ifr_ifindex = if_nametoindex(ifr.ifr_name);
     if (!ifr.ifr_ifindex) {
