@@ -1,5 +1,11 @@
-test method
 
+test method
+TjuBusAcc.cpp
+	serial port to be done
+	io, addr to be read from windows visual studio program
+
+
+TjuBusSteer.cpp
 step 1.
         print to terminal
 	test if this could read deke steering system feedback CAN

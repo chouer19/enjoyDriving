@@ -22,3 +22,15 @@ target_link_libraries(TjuBusSteer
                         cppzmq
                         common
                       )
+
+add_executable(TjuBusAcc TjuBusAcc.cpp)
+target_link_libraries(TjuBusAcc
+                        msgs
+                        ${Boost_LIBRARIES}
+                        ${Boost_THREAD_LIBRARY}
+                        ${PROTOBUF_LIBRARIES}
+                        ${can}
+                        ${simdjson}
+                        cppzmq
+                        common
+                      )
