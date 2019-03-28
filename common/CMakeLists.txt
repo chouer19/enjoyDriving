@@ -7,3 +7,5 @@ find_library(simdjson
              ${PROJECT_LIB_DIR}
             )
 add_library(common address.cpp)
+target_link_libraries(common
+                      ${simdjson})

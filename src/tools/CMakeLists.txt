@@ -20,6 +20,14 @@ target_link_libraries(testIbeoLux msgs
 			${Boost_THREAD_LIBRARY}
                         msgs
                         cppzmq
-
                      )
 
+add_executable(testTjuBusAcc testTjuBusAcc.cpp)
+target_link_libraries(testTjuBusAcc
+	      	${PROTOBUF_LIBRARIES} 
+	      	${Boost_LIBRARIES} 
+	      	${Boost_THREAD_LIBRARY}
+                      cppzmq
+                      common
+                      msgs
+                     )

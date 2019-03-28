@@ -49,7 +49,6 @@ link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${PROJECT_INCLUDE_DIR})
 
-add_subdirectory(common)
 add_subdirectory(msgs)
 add_subdirectory(tools)
 add_subdirectory(actuation)

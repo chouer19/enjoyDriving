@@ -28,6 +28,11 @@ void print_usage(char *prg);
 void thread_sub();
 int CaculateCRC(unsigned char * data);
 int CaculateWriteDO(int addr, int io, int voltage, unsigned char *data);
+void wait(int milliseconds)
+{
+  boost::this_thread::sleep_for(boost::chrono::milliseconds{milliseconds});
+}
+
 static volatile int running = 1;
 int logg = 0;
 void sigterm(int signo)
@@ -43,7 +48,11 @@ boost::asio::serial_port serial(io);
 zmq::context_t context(1);
 
 int main(int argc, char ** argv){
-    int baudRate = 115200;
+    signal(SIGTERM, sigterm);
+    signal(SIGHUP, sigterm);
+    signal(SIGINT, sigterm);
+
+    int baudRate = 9600;
     std::string portName = "/dev/ttyUSB0";
     int opt = 0;
     while ((opt = getopt(argc, argv, "p:t:r:l")) != -1) {
@@ -65,8 +74,15 @@ int main(int argc, char ** argv){
             }
         }
     }
-    serial.set_option(boost::asio::serial_port_base::baud_rate(baudRate));
+    std::cout << "debug 1!\n";
     serial.open(portName);
+    serial.set_option(boost::asio::serial_port_base::baud_rate(baudRate));
+
+    boost::thread t_sub{thread_sub};
+    while(running){
+        wait(1000);
+    }
+    t_sub.join();
 
     return 1;
 }
@@ -99,8 +115,11 @@ void thread_sub(){
         std::string buff = s_recv (subscriber);
         control_msg.ParseFromString(buff);
         accVoltage = control_msg.targetacceleration();
-        CaculateWriteDO(200, 0, accVoltage , data);
+        std::cout << accVoltage << std::endl;
+        CaculateWriteDO(254, 1, accVoltage * 100.0 , data);
         boost::asio::write(serial , boost::asio::buffer(data, 8));
+
+        printf("%3x %3x %3x %3x %3x %3x %3x %3x\n",data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7] );
     }
 }
 
@@ -140,15 +159,15 @@ unsigned short crcTable[256] = {
 };
 
 int CaculateCRC(unsigned char * data){
-    unsigned char crc = 0xff;
+    uint16_t crc = 0xffff;
     unsigned char tableIndex = 0;
     for(int i=0; i<6; i++){
-        tableIndex = (unsigned char)(crc ^ data[i]);
-        crc >> 8;
+        tableIndex = (uint8_t)(crc ^ data[i]);
+        crc >>= 8;
         crc ^= crcTable[tableIndex];
     }
-    data[6] = (unsigned char)(crc & 0xff);
-    data[7] = (unsigned char)(crc >> 8);
+    data[6] = (uint8_t)(crc & 0xff);
+    data[7] = (uint8_t)(crc >> 8);
     return 1;
 }
 
