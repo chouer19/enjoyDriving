@@ -11,6 +11,98 @@
  *///-------------------------------------------------------------------
 
 #include <iostream>
+#include "zmq/zhelpers.hpp"
+#include "config/config.h"
+#include "common/address.h"
+
+#include "msgs/Vehicle.pb.h"
+
+#include <boost/thread.hpp>
+#include <boost/chrono.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/serial_port.hpp>
+#include <signal.h>
+#include <ctime>
+
+void print_usage(char *prg);
+void thread_sub();
+int CaculateCRC(unsigned char * data);
+int CaculateWriteDO(int addr, int io, int voltage, unsigned char *data);
+static volatile int running = 1;
+int logg = 0;
+void sigterm(int signo)
+{
+    running = 0;
+}
+
+// definations about boost serial_port
+boost::asio::io_service io;
+boost::asio::serial_port serial(io);
+
+// definations about zmq
+zmq::context_t context(1);
+
+int main(int argc, char ** argv){
+    int baudRate = 115200;
+    std::string portName = "/dev/ttyUSB0";
+    int opt = 0;
+    while ((opt = getopt(argc, argv, "p:t:r:l")) != -1) {
+        switch (opt) {
+            case 'p':{
+                portName = optarg;
+                break;
+            }
+            case 'b':{
+                baudRate= atoi(optarg);
+                break;
+            }
+            case 'l':{
+                logg = 1;
+                break;
+            }
+            default:{
+                break;
+            }
+        }
+    }
+    serial.set_option(boost::asio::serial_port_base::baud_rate(baudRate));
+    serial.open(portName);
+
+    return 1;
+}
+
+void print_usage(char *prg)
+{
+        fprintf(stderr, "\nUsage: %s [options] <parameter>+\n", prg);
+        fprintf(stderr, "  (use CTRL-C to terminate %s)\n\n", prg);
+        fprintf(stderr, "Options: -l                (use log function)\n");
+        fprintf(stderr, "         -p <port>         (can port machine)\n");
+        fprintf(stderr, "         -t <id>           (can id)\n\n");
+        fprintf(stderr, "         -r <id>           (can id)\n\n");
+}
+
+void thread_sub(){
+    char address[sizeof("127.127.127.127:8888")+1];
+    char topic[255];
+    int ret;
+    ret = getAddressTopic("main", address, topic);
+    Car_msg::Common_control control_msg;
+
+    zmq::socket_t subscriber (context, ZMQ_SUB);
+    subscriber.connect(address);
+    subscriber.setsockopt( ZMQ_SUBSCRIBE, topic, 1);
+    double accVoltage = 0;
+
+    unsigned char data[8] = {0x00, 0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00};
+    while(running){
+        std::string address = s_recv (subscriber);
+        std::string buff = s_recv (subscriber);
+        control_msg.ParseFromString(buff);
+        accVoltage = control_msg.targetacceleration();
+        CaculateWriteDO(200, 0, accVoltage , data);
+        boost::asio::write(serial , boost::asio::buffer(data, 8));
+    }
+}
 
 unsigned short crcTable[256] = {
     0X0000, 0XC0C1, 0XC181, 0X0140, 0XC301, 0X03C0, 0X0280, 0XC241, 
@@ -65,14 +157,8 @@ int CaculateWriteDO(int addr, int io, int voltage, unsigned char *data){
     data[1] = 0x06;
     data[2] = 0x00;
     data[3] = (unsigned char)io;
-    data[4] = (unsigned char)(voltage/256);
-    data[5] = (unsigned char)(voltage%256);
+    data[4] = (unsigned char)(voltage / 256);
+    data[5] = (unsigned char)(voltage % 256);
     return CaculateCRC(data);
     //return 1;
-}
-
-int main(int argc, char ** argv){
-
-
-    return 1;
 }
